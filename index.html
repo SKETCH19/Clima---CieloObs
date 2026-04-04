@@ -11,7 +11,61 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="./assets/css/styles.css" id="app-stylesheet">
+  <script>
+    (function () {
+      const styleCandidates = [
+        './assets/css/styles.css',
+        'assets/css/styles.css',
+        '/assets/css/styles.css'
+      ];
+
+      function linkHasLoadedStyles() {
+        const link = document.getElementById('app-stylesheet');
+        if (!link || !link.sheet) {
+          return false;
+        }
+
+        try {
+          return link.sheet.cssRules.length > 0;
+        } catch {
+          return true;
+        }
+      }
+
+      async function injectFallbackStyles() {
+        if (linkHasLoadedStyles()) {
+          return;
+        }
+
+        for (const href of styleCandidates) {
+          try {
+            const response = await fetch(href, { cache: 'no-store' });
+            if (!response.ok) {
+              continue;
+            }
+
+            const css = await response.text();
+            if (!css.trim()) {
+              continue;
+            }
+
+            const style = document.createElement('style');
+            style.textContent = css;
+            style.setAttribute('data-fallback-styles', 'true');
+            document.head.appendChild(style);
+            return;
+          } catch {
+            continue;
+          }
+        }
+      }
+
+      window.addEventListener('load', () => {
+        window.setTimeout(injectFallbackStyles, 0);
+      });
+    }());
+  </script>
 </head>
 <body>
   <div class="sky-gradient-top"></div>
@@ -285,6 +339,6 @@
     </button>
   </nav>
 
-  <script src="assets/js/app.js"></script>
+  <script src="./assets/js/app.js"></script>
 </body>
 </html>
