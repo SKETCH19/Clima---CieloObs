@@ -1,0 +1,6 @@
+{
+  "appId": "com.sketch19.cieloobs",
+  "appName": "CieloObs",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

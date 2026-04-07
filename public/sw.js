@@ -1,11 +1,9 @@
 const CACHE_NAME = 'cieloobs-v1';
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/assets/css/styles.css',
-  '/assets/js/app.js',
-  '/manifest.webmanifest',
-  '/icon.svg'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
