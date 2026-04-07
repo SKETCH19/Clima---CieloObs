@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -19,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup Java
@@ -43,7 +46,7 @@ jobs:
         run: npm ci
 
       - name: Install Capacitor toolchain
-        run: npm install --no-save @capacitor/cli @capacitor/core @capacitor/android
+        run: npm install @capacitor/cli@^7 @capacitor/core@^7 @capacitor/android@^7
 
       - name: Build web app
         run: npm run build
@@ -57,6 +60,23 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug --stacktrace
+
+      - name: Publish APK to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="apk-${GITHUB_RUN_NUMBER}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" android/app/build/outputs/apk/debug/app-debug.apk --clobber
+          else
+            gh release create "$TAG" android/app/build/outputs/apk/debug/app-debug.apk \
+              --title "CieloObs APK ${GITHUB_RUN_NUMBER}" \
+              --notes "APK debug generado automaticamente desde GitHub Actions."
+          fi
+
+          gh api repos/${{ github.repository }}/releases/tags/$TAG \
+            --jq '.assets[] | select(.name == "app-debug.apk") | .browser_download_url' \
+            >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
